@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "223531320696",
+    "project_id": "chat-honey",
+    "storage_bucket": "chat-honey.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:223531320696:android:e4cb7aa0a98f78f636f48d",
+        "android_client_info": {
+          "package_name": "com.sayang"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "223531320696-n1d9ro3r99vi8t4bqergrrputid6esuv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sayang",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "223531320696-ti9h2377plc5iaveo01tqa7skmf840u5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKjzTwQ7WOP4xJvpya-UzXhHnTGbe2ZLY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "223531320696-ti9h2377plc5iaveo01tqa7skmf840u5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
