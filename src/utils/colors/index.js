@@ -1,12 +1,13 @@
 const mainColors = {
-  light: '#D5EFCF',
-  lightGreen: '#D6EAFF',
+  light: '#F1F0F7',
+  tomato: '#FA6A68',
   dark: '#19191a',
   gray: '#bdc2c9',
   lightBlue: '#0BCAD1',
   green: '#4267B2',
   orange: '#C23321',
   blue: '#4267B2',
+  input: '#FFFFFF',
 };
 
 export const colors = {
@@ -21,7 +22,7 @@ export const colors = {
     text: 'white',
   },
   cart: {
-    color: mainColors.lightGreen,
+    color: mainColors.tomato,
   },
   aouth: {
     facebook: mainColors.blue,
