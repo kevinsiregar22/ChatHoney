@@ -4,6 +4,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Text,
+  Alert,
 } from 'react-native';
 import {colors} from '../../utils';
 import React, {useState} from 'react';
@@ -17,6 +18,10 @@ import {ScrollView} from 'react-native-gesture-handler';
 import {widthPercentageToDP as wp} from 'react-native-responsive-screen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import GoBack from '../../components/GoBack';
+import authProvider from '@react-native-firebase/auth';
+import {configDb} from '../../helpers/configDb';
+
+const auth = authProvider();
 
 export default function Register() {
   const [, setUsername] = useState('');
@@ -25,6 +30,44 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(true);
   const [errorMessageEmail, setErrorMessageEmail] = useState(null);
   const [errorMessagePass, setErrorMessagePass] = useState(null);
+
+  const [userState] = useState({
+    email: '',
+    password: '',
+  });
+
+  const createUserByEmail = async () => {
+    try {
+      const res = await auth.createUserWithEmailAndPassword(email, password);
+      console.log(res);
+      if ('email' in res.user && res.user.email) {
+        await auth.currentUser.updateProfile({
+          displayName: userState.setUsername,
+        });
+        await configDb.ref(`users/${res.user.uid}`).set({
+          displayName: userState.setUsername,
+          email: res.user.email,
+          phone: res.user.phoneNumber,
+          image: res.user.photoURL,
+          contact: [],
+          roomChat: [],
+          _id: res.user.uid,
+        });
+        Alert.alert('User account created & signed in!');
+        navigate('Home');
+      }
+    } catch (error) {
+      if (error.code === 'auth/email-already-in-use') {
+        Alert.alert('That email address is already in use!');
+        navigate('Login');
+      }
+      if (error.code === 'auth/invalid-email') {
+        Alert.alert('That email address is invalid!');
+        navigate('Login');
+      }
+      // console.error(error);
+    }
+  };
 
   const checkemail = () => {
     let reqEmail = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
@@ -159,6 +202,7 @@ export default function Register() {
         />
 
         <Button
+          onPress={createUserByEmail}
           title="Register"
           disabled={password === '' ? true : null}
           buttonStyle={{
