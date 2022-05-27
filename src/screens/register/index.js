@@ -10,51 +10,59 @@ import {colors} from '../../utils';
 import React, {useState} from 'react';
 import {Input, Button} from '@rneui/base';
 import {ms} from 'react-native-size-matters';
+import GoBack from '../../components/GoBack';
 import Poppins from '../../components/Poppins';
 import FastImage from 'react-native-fast-image';
 import {navigate} from '../../helpers/navigate';
-import {ImageScreens} from '../../helpers/library';
-import {ScrollView} from 'react-native-gesture-handler';
-import {widthPercentageToDP as wp} from 'react-native-responsive-screen';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import GoBack from '../../components/GoBack';
-import authProvider from '@react-native-firebase/auth';
 import {configDb} from '../../helpers/configDb';
+import {ImageScreens} from '../../helpers/library';
+import authProvider from '@react-native-firebase/auth';
+import {ScrollView} from 'react-native-gesture-handler';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {widthPercentageToDP as wp} from 'react-native-responsive-screen';
 
 const auth = authProvider();
 
 export default function Register() {
-  const [, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  // const [errorMessageEmail, setErrorMessageEmail] = useState(null);
+  // const [errorMessagePass, setErrorMessagePass] = useState(null);
   const [showPassword, setShowPassword] = useState(true);
-  const [errorMessageEmail, setErrorMessageEmail] = useState(null);
-  const [errorMessagePass, setErrorMessagePass] = useState(null);
 
-  const [userState] = useState({
+  const [userState, setUserState] = useState({
+    name: '',
     email: '',
     password: '',
   });
 
   const createUserByEmail = async () => {
     try {
-      const res = await auth.createUserWithEmailAndPassword(email, password);
-      console.log(res);
+      const res = await auth.createUserWithEmailAndPassword(
+        userState.email,
+        userState.password,
+      );
+
+      let data = {
+        displayName: userState.name,
+        email: res.user.email,
+        image:
+          'https://upload.wikimedia.org/wikipedia/commons/a/a0/Pierre-Person.jpg',
+        password: res.user.password,
+        roomChat: [],
+        createdAt: new Date(),
+        bio: 'mencoba',
+        // id: uuid.v4(),
+        _id: res.user.uid,
+      };
+
+      console.log('ini user:', res.user);
       if ('email' in res.user && res.user.email) {
         await auth.currentUser.updateProfile({
-          displayName: userState.setUsername,
+          displayName: userState.name,
         });
-        await configDb.ref(`users/${res.user.uid}`).set({
-          displayName: userState.setUsername,
-          email: res.user.email,
-          phone: res.user.phoneNumber,
-          image: res.user.photoURL,
-          contact: [],
-          roomChat: [],
-          _id: res.user.uid,
-        });
+        console.log('ini 1:', res.user);
+        await configDb.ref(`users/${res.user.uid}`).set(data);
         Alert.alert('User account created & signed in!');
-        navigate('Home');
+        navigate('Login');
       }
     } catch (error) {
       if (error.code === 'auth/email-already-in-use') {
@@ -65,32 +73,40 @@ export default function Register() {
         Alert.alert('That email address is invalid!');
         navigate('Login');
       }
-      // console.error(error);
     }
   };
 
-  const checkemail = () => {
-    let reqEmail = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    // console.log(reqEmail.test('email', email));
-    if (!reqEmail.test(email)) {
-      setErrorMessageEmail('Email is invalid!');
-    } else {
-      setErrorMessageEmail(null);
-    }
+  const handleUserState = (field, value) => {
+    setUserState(prevState => {
+      prevState[field] = value;
+      return {
+        ...prevState,
+      };
+    });
   };
 
-  const checkPass = () => {
-    let reqPass =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[#?!@$%^&*-])(?=.{8,})/;
-    // console.log(reqPass.test('password', password));
-    if (!reqPass.test(password)) {
-      setErrorMessagePass(
-        'Password should contain at least least 8, one digit, lower case and uppercase!',
-      );
-    } else {
-      setErrorMessagePass(null);
-    }
-  };
+  // const checkemail = () => {
+  //   let reqEmail = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+  //   // console.log(reqEmail.test('email', email));
+  //   if (!reqEmail.test(email)) {
+  //     setErrorMessageEmail('Email is invalid!');
+  //   } else {
+  //     setErrorMessageEmail(null);
+  //   }
+  // };
+
+  // const checkPass = () => {
+  //   let reqPass =
+  //     /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[#?!@$%^&*-])(?=.{8,})/;
+  //   // console.log(reqPass.test('password', password));
+  //   if (!reqPass.test(password)) {
+  //     setErrorMessagePass(
+  //       'Password should contain at least least 8, one digit, lower case and uppercase!',
+  //     );
+  //   } else {
+  //     setErrorMessagePass(null);
+  //   }
+  // };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -131,12 +147,12 @@ export default function Register() {
             size: 30,
             color: colors.icon.color,
           }}
-          onChangeText={text => setUsername(text)}
+          onChangeText={text => handleUserState('name', text)}
         />
 
         <Input
-          onBlur={() => checkemail()}
-          errorMessage={errorMessageEmail ? errorMessageEmail : null}
+          // onBlur={() => checkemail()}
+          // errorMessage={errorMessageEmail ? errorMessageEmail : null}
           inputStyle={{fontSize: 18, paddingVertical: 15}}
           inputContainerStyle={{
             borderBottomWidth: 1,
@@ -155,7 +171,7 @@ export default function Register() {
             size: 30,
             color: colors.icon.color,
           }}
-          onChangeText={text => setEmail(text)}
+          onChangeText={text => handleUserState('email', text)}
         />
 
         <Input
@@ -171,8 +187,8 @@ export default function Register() {
             borderColor: colors.border.color,
             borderRadius: 10,
           }}
-          onBlur={() => checkPass()}
-          errorMessage={errorMessagePass ? errorMessagePass : null}
+          // onBlur={() => checkPass()}
+          // errorMessage={errorMessagePass ? errorMessagePass : null}
           leftIconContainerStyle={{
             marginRight: 8,
             marginLeft: 15,
@@ -184,7 +200,7 @@ export default function Register() {
             size: 30,
             color: colors.icon.color,
           }}
-          onChangeText={text => setPassword(text)}
+          onChangeText={text => handleUserState('password', text)}
           secureTextEntry={showPassword}
           rightIcon={() => {
             return (
@@ -204,7 +220,7 @@ export default function Register() {
         <Button
           onPress={createUserByEmail}
           title="Register"
-          disabled={password === '' ? true : null}
+          // disabled={password === '' ? true : null}
           buttonStyle={{
             paddingVertical: ms(10),
             width: wp('80%'),

@@ -1,6 +1,6 @@
 import React, {useState, useCallback, useEffect} from 'react';
 import {GiftedChat} from 'react-native-gifted-chat';
-import {myDb} from './src/helpers/db';
+import {myDb} from '../../helpers/configDb';
 
 function ChatMe() {
   const [messages, setMessages] = useState([]);

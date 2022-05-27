@@ -1,12 +1,19 @@
 import React from 'react';
-import {navigationRef} from './src/helpers/navigate';
-import {NavigationContainer} from '@react-navigation/native';
-import MainStack from './src/routers/MainStack';
+import Root from './src/routers';
+import {Provider} from 'react-redux';
+import {persistor, store} from './src/store';
+import {PersistGate} from 'redux-persist/lib/integration/react';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+// import messaging from '@react-native-firebase/messaging';
 
 export default function App() {
   return (
-    <NavigationContainer ref={navigationRef}>
-      <MainStack />
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <Provider store={store}>
+        <PersistGate persistor={persistor}>
+          <Root />
+        </PersistGate>
+      </Provider>
+    </SafeAreaProvider>
   );
 }

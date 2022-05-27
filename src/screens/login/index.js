@@ -3,52 +3,72 @@ import {
   SafeAreaView,
   StyleSheet,
   TouchableOpacity,
-  Text,
+  Alert,
 } from 'react-native';
 import Google from '../google';
 import {colors} from '../../utils';
 import React, {useState} from 'react';
+import {useDispatch} from 'react-redux';
+import {setDataUser} from './redux/action';
 import {Input, Button} from '@rneui/base';
 import {ms} from 'react-native-size-matters';
 import Poppins from '../../components/Poppins';
 import {navigate} from '../../helpers/navigate';
 import FastImage from 'react-native-fast-image';
+import {configDb} from '../../helpers/configDb';
 import {ImageScreens} from '../../helpers/library';
+import authTypes from '@react-native-firebase/auth';
 import {ScrollView} from 'react-native-gesture-handler';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {widthPercentageToDP as wp} from 'react-native-responsive-screen';
 
-function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(true);
-  const [errorMessageEmail, setErrorMessageEmail] = useState(null);
-  const [errorMessagePass, setErrorMessagePass] = useState(null);
+const auth = authTypes();
 
-  const checkemail = () => {
-    let req = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    // console.log(req.test('email', email));
-    if (!req.test(email)) {
-      setErrorMessageEmail('Email is invalid!');
-    } else {
-      setErrorMessageEmail(null);
+const Login = () => {
+  const dispatch = useDispatch();
+  const [showPassword, setShowPassword] = useState(true);
+
+  const [userState, setUserState] = useState({
+    email: '',
+    password: '',
+  });
+
+  const LoginWithEmail = async () => {
+    try {
+      const res = await auth.signInWithEmailAndPassword(
+        userState.email,
+        userState.password,
+      );
+      let isUpdate = true;
+
+      if (isUpdate) {
+        const results = await configDb
+          .ref(`users/${res.user.uid}`)
+          .once('value');
+        if (results.val()) {
+          dispatch(setDataUser(results.val()));
+          navigate('Home');
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      if (error.code === 'auth/wrong-password') {
+        Alert.alert('The password is invalid');
+      }
+
+      if (error.code === 'auth/invalid-email') {
+        Alert.alert('The email address is badly formatted');
+      }
     }
   };
 
-  const checkPass = () => {
-    let reqPass =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/;
-    var strongRegex = new RegExp(
-      /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/,
-    );
-    // console.log(reqPass.test('password', password));
-    if (!reqPass.test(password)) {
-      setErrorMessagePass(
-        'Password should contain at least least 8, one digit, lower case and uppercase!',
-      );
-    } else {
-      setErrorMessagePass(null);
-    }
+  const handleUserState = (field, value) => {
+    setUserState(prevState => {
+      prevState[field] = value;
+      return {
+        ...prevState,
+      };
+    });
   };
 
   return (
@@ -60,7 +80,6 @@ function Login() {
           style={styles.image}
           resizeMode="cover"
         />
-
         <Poppins
           type="Bold"
           size={30}
@@ -71,14 +90,12 @@ function Login() {
         </Poppins>
 
         <Input
-          onBlur={() => checkemail()}
-          errorMessage={errorMessageEmail ? errorMessageEmail : null}
           inputStyle={{fontSize: 18, paddingVertical: 15}}
           inputContainerStyle={{
-            borderRadius: 10,
             borderBottomWidth: 1,
-            borderBottomLeftRadius: 100,
+            borderBottomLeftRadius: 80,
             borderColor: colors.border.color,
+            borderRadius: 10,
           }}
           leftIconContainerStyle={{
             marginRight: 8,
@@ -86,12 +103,12 @@ function Login() {
           }}
           placeholder="Email"
           leftIcon={{
-            size: 30,
-            name: 'email',
             type: 'entypo',
+            name: 'email',
+            size: 30,
             color: colors.icon.color,
           }}
-          onChangeText={text => setEmail(text)}
+          onChangeText={text => handleUserState('email', text)}
         />
 
         <Input
@@ -107,8 +124,7 @@ function Login() {
             borderColor: colors.border.color,
             borderRadius: 10,
           }}
-          onBlur={() => checkPass()}
-          errorMessage={errorMessagePass ? errorMessagePass : null}
+          // onBlur={() => checkPass()}
           leftIconContainerStyle={{
             marginRight: 8,
             marginLeft: 15,
@@ -120,7 +136,7 @@ function Login() {
             type: 'font-awesome-5',
             color: colors.icon.color,
           }}
-          onChangeText={text => setPassword(text)}
+          onChangeText={text => handleUserState('password', text)}
           secureTextEntry={showPassword}
           rightIcon={() => {
             return (
@@ -136,10 +152,10 @@ function Login() {
             );
           }}
         />
-
         <Button
+          onPress={LoginWithEmail}
           title="Login"
-          disabled={password === '' ? true : null}
+          // disabled={password === '' ? true : null}
           buttonStyle={{
             width: wp('80%'),
             alignSelf: 'center',
@@ -177,7 +193,7 @@ function Login() {
       </ScrollView>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {

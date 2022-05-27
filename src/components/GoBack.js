@@ -6,10 +6,10 @@ import {ms} from 'react-native-size-matters';
 
 import {navigate} from '../helpers/navigate';
 
-export default function GoBack() {
+export default function GoBack(navigation) {
   return (
     <View>
-      <TouchableOpacity onPress={() => navigate('Login')}>
+      <TouchableOpacity onPress={() => navigate('Home')}>
         <FastImage
           source={IconLists.arrowBack}
           style={styles.icons}
